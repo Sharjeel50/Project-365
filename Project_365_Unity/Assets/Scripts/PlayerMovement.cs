@@ -6,8 +6,12 @@ public class PlayerMovement : MonoBehaviour {
 
 
     public float speed = 6f;
+
     public float gravity = 150f;
+
+
     private CharacterController _charCont;
+    public bool jumpkey;
 
     public float JumpForce = 70f;
     public LayerMask groundLayers;
@@ -18,6 +22,7 @@ public class PlayerMovement : MonoBehaviour {
     void Start () {
         _charCont = GetComponent<CharacterController>();
     }
+
 
     // Update is called once per frame
     void Update()
