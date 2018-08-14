@@ -4,48 +4,86 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour {
 
+    //Variables
+    [SerializeField]
+    public float speed = 1000f;
 
-    public float speed = 6f;
-
+    [SerializeField]
     public float gravity = 150f;
 
+    [SerializeField]
+    public float jumpForce;
 
-    private CharacterController _charCont;
-    public bool jumpkey;
 
-    public float JumpForce = 70f;
-    public LayerMask groundLayers;
 
-   // private Vector3 moveDirection = Vector3.zero;
+    public Rigidbody rb;
+    public Vector3 Movement;
+    private bool isGrounded = false;
+
+   // public LayerMask groundLayers;
 
     // Use this for initialization
-    void Start () {
-        _charCont = GetComponent<CharacterController>();
+    void Awake () {
+        rb = GetComponent<Rigidbody>();
+    }
+
+
+    //Set collision for ground
+    void OnCollisionStay(Collision coll)
+    {
+        isGrounded = true;
+    }
+
+    void OnCollisionExit(Collision coll)
+    {
+        isGrounded = false;
+    }
+
+
+
+    private void Update()
+    {
+        //Non-Physics
+        float deltaX = Input.GetAxis("Horizontal"); //Get the inputs from 
+        float deltaZ = Input.GetAxis("Vertical");
+
+
+        //Hold Movement values
+        Movement = (deltaX * transform.right + deltaZ * transform.forward);// .normalize
+        Movement = Vector3.ClampMagnitude(Movement, speed); //clamps speed so movement is always the same
+
+        if (Input.GetKeyDown(KeyCode.LeftShift)) //should be sprint(Doesnt Work)
+        {
+            speed = 5000f;
+        }
+        else
+        {
+            speed = 1000f;
+        }
+
     }
 
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        float deltaX = Input.GetAxis("Horizontal") * speed; //Get the inputs from 
-        float deltaY = Input.GetAxis("Vertical") * speed;
-        Vector3 Movement = new Vector3(deltaX, 0, deltaY);
-        Movement = Vector3.ClampMagnitude(Movement, speed); //clamps speed so movement is always the same
+        //Physics
+        Move();
 
-
-        if (_charCont.isGrounded && Input.GetButton("Jump"))
+        if (Input.GetButton("Jump") && isGrounded)
         {
-            Movement.y += JumpForce;
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
-        else {
-             Movement.y -= gravity * Time.deltaTime;
-        }
-
-        Movement *= Time.deltaTime; // fixes the movement so that its the same across different frame rates.
-        Movement = transform.TransformDirection(Movement);
-        _charCont.Move(Movement);
-
+      
     }
 
+    void Move()
+    {
+        //apply movement
+        Vector3 yvelFix = new Vector3(0, rb.velocity.y, 0);
+        rb.velocity = (Movement * speed) * Time.deltaTime;
+        rb.velocity += yvelFix;
+       
+    }
 }
 
