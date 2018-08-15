@@ -4,38 +4,36 @@ using UnityEngine;
 
 public class PlayerCameraC : MonoBehaviour {
 
-    
+    public float Sensitivity = 5.0f;
+    public float Smoothing = 2.0f;
+    private Vector2 _mouseLook;
+    private Vector2 _smoothV;
+    private GameObject _player;
 
-    public enum RotationAxis //enum with both types of axes
+    void Awake()
     {
-        MouseX = 1,
-        MouseY = 2
+     _player = transform.parent.gameObject;
+
     }
 
-    public RotationAxis axes = RotationAxis.MouseX; // create axes variable that can be set to mouse x or y
-
-    public float minvert = -45.0f;
-    public float maxvert = 45.0f;
-    public float sensHorizontal = 10.0f;   //sensitivity
-    public float sensVertical = 10.0f;
-
-    public float _rotationX = 0;
 
     // Update is called once per frame
-    void FixedUpdate () {
-        if (axes == RotationAxis.MouseX) // if axes is set Mouse X
-        {
-            transform.Rotate(0, Input.GetAxis("Mouse X") * sensHorizontal, 0); // transform the rotation of the camera by the input from mouse and multiply that by the sensitivity
+    void Update()
+    {
+            Vector2 mouseDirection = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
 
-        }else if (axes == RotationAxis.MouseY)
+            mouseDirection.x *= Sensitivity * Smoothing;
+            mouseDirection.y *= Sensitivity * Smoothing;
 
-        {
-            _rotationX -= Input.GetAxis("Mouse Y") * sensVertical; // _rotationX = _rotationX - input * sens 
-            _rotationX = Mathf.Clamp(_rotationX, minvert, maxvert); // Clamps vert angle within  min and max angles
+            _smoothV.x = Mathf.Lerp(_smoothV.x, mouseDirection.x, 1f / Smoothing);
+            _smoothV.y = Mathf.Lerp(_smoothV.y, mouseDirection.y, 1f / Smoothing);
 
-            float rotationY = transform.localEulerAngles.y; //???
-            transform.localEulerAngles = new Vector3(_rotationX, rotationY, 0);//???
+            _mouseLook += _smoothV;
+            _mouseLook.y = Mathf.Clamp(_mouseLook.y, -90, 90);
+
+            transform.localRotation = Quaternion.AngleAxis(-_mouseLook.y, Vector3.right);
+
+            _player.transform.rotation = Quaternion.AngleAxis(_mouseLook.x, _player.transform.up);
         }
 
-    }
 }
