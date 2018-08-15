@@ -7,8 +7,19 @@ public class GunScript : MonoBehaviour
 
     public float damage = 10f;
     public float range = 100f;
+    private Camera _camera;
+    private ParticleSystem _particle;
+    private LayerMask _shootableMask;
 
-    public Camera fpsCam;
+
+    void Start()
+    {
+        _camera = Camera.main;
+        _particle = GetComponentInChildren<ParticleSystem>();
+        _shootableMask = LayerMask.GetMask("Shootable");
+
+    }
+
 
     void Update()
     {
@@ -20,10 +31,16 @@ public class GunScript : MonoBehaviour
 
     void Shoot()
     {
+        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
+
+        if (Physics.Raycast(ray, out hit, range, _shootableMask))
+
         {
-            Debug.Log(hit.transform.name);
+
+            print("hit " + hit.collider.gameObject);
+           // Debug.Log(hit.transform.name);
+            _particle.Play();
 
             TreeDamage target = hit.transform.GetComponent<TreeDamage>();
 
@@ -31,6 +48,18 @@ public class GunScript : MonoBehaviour
             {
                 target.TakeDamage(damage);
             }
+
         }
     }
 }
+
+
+
+
+
+//if (Physics.Raycast(_camera.transform.position, _camera.transform.forward, out hit, range))
+//{
+//    Debug.Log(hit.transform.name);
+
+
+        //}
